@@ -13,12 +13,13 @@
 
 typedef int Status;
 int line_count = 0;   //打印链表时的计数器
-/* P.28 形式定义 */
+					  /* P.28 形式定义 */
 typedef int ElemType;	//可根据需要修改元素的类型
 
 typedef struct LNode {
 	ElemType      data;	//存放数据
 	struct LNode *next;	//存放直接后继的指针
+	struct LNode *prior;
 } LNode, *LinkList;
 
 Status InitList(LinkList *L)
@@ -27,15 +28,16 @@ Status InitList(LinkList *L)
 	if (*L == NULL)
 		exit(OVERFLOW);
 	(*L)->next = *L;
+	(*L)->prior = *L;
 	return OK;
 }
 
 /* 删除循环链表 */
 Status DestroyList(LinkList *L)
 {
-	LinkList q, p=(*L)->next; //指向首元
+	LinkList q, p = (*L)->next; //指向首元
 
-						/* 整个链表(含头结点)依次释放 */
+								/* 整个链表(含头结点)依次释放 */
 	while (p != *L) {    //若链表为空，则循环不执行
 		q = p->next; //抓住链表的下一个结点
 		free(p);
@@ -55,7 +57,7 @@ int ListLength(LinkList L)
 	int len = 0;
 
 	/* 循环整个链表，进行计数 */
-	while (p!=L) {
+	while (p != L) {
 		p = p->next;
 		len++;
 	}
@@ -67,16 +69,16 @@ int ListLength(LinkList L)
 Status ListInsert(LinkList *L, int i, ElemType e)
 {
 	LinkList s, p;
-	p= (*L);	//p指向头结点
+	p = (*L);	//p指向头结点
 	int   pos = 0;
 
 	/* 寻找第i-1个结点 */
-	while (p->next!=*L && pos<i - 1) {
+	while (p->next != *L && pos<i - 1) {
 		p = p->next;
 		pos++;
 	}
 
-	if (p==NULL||pos>i - 1)  //i值非法则返回
+	if (p == NULL || pos>i - 1)  //i值非法则返回
 		return ERROR;
 
 	//执行到此表示找到指定位置，p指向第i-1个结点
@@ -88,21 +90,19 @@ Status ListInsert(LinkList *L, int i, ElemType e)
 	s->data = e; 	//新结点数据域赋值
 	s->next = p->next;	//新结点的next是第i个
 	p->next = s;	//第i-1个的next是新结点
-
+	s->prior = p;
+	s->next->prior = s;
 	return OK;
 }
 /* 删除指定元素，并将被删除元素的值放入e中返回 */
-Status ListDelete(LinkList p, ElemType *e)
+Status ListDelete(LinkList *p, ElemType *e)
 {
-	LinkList q;
-	
-
-	q = p->next;       //q指向第i个结点
-	p->next = q->next; //第i-1个结点的next域指向第i+1个
-
-	*e = q->data;      //取第i个结点的值
+	(*p)->next->prior = (*p)-> prior;
+	(*p)->prior->next = (*p)->next;
+	*e = (*p)->data;      //取第i个结点的值
+	LinkList q= (*p);
+	(*p) = (*p)->next;
 	free(q);           //释放第i个结点
-
 	return OK;
 }
 
@@ -116,17 +116,23 @@ Status MyVisit(ElemType e)
 
 	return OK;
 }
+void NEXT(LinkList *e)
+{
+	*e = (*e)->prior;
+	//*e = (*e)->next;
+}
 /* 遍历线性表 */
-Status ListTraverse(LinkList L, Status(*visit)(ElemType e))
+Status ListTraverse(LinkList L, Status(*visit)(ElemType e),void (*next)(LinkList *e))
 {
 	extern int line_count; //在main中定义的打印换行计数器（与算法无关）
-	LinkList p = L->next;
+	LinkList p = L;
+	NEXT(&p);
 
 	line_count = 0;		//计数器恢复初始值（与算法无关）
-	while (p!=L && (*visit)(p->data) == TRUE)
-		p = p->next;
+	while (p != L && (*visit)(p->data) == TRUE)
+		NEXT(&p);
 
-	if (p!=L)
+	if (p != L)
 		return ERROR;
 
 	printf("\n");//最后打印一个换行，只是为了好看，与算法无关
@@ -134,46 +140,46 @@ Status ListTraverse(LinkList L, Status(*visit)(ElemType e))
 }
 
 /*循环遍历*/
-Status ListTravel(LinkList *L,int k,int m)
+Status ListTravel(LinkList *L, int k, int m)
 {
 	LinkList  p;
 	p = (*L);	//p指向头结点
 	int   pos = 0;
 
 	/* 寻找第i-1个结点 */
-	while (pos<m-1) {
-		p = p->next;
+	while (pos<m) {
+		NEXT(&p);
 		if (p == *L)
-			p = p->next;
+			NEXT(&p);
 		printf("%d->", p->data);
 		pos++;
 	}
 	printf("\n**************\n");
-	pos = 0;
+	pos = 1;
 	while (ListLength(*L) != 1)
 	{
 		printf("STEP:");
-		while (pos < k-1)
+		while (pos < k)
 		{
-			if (p->next == *L)
+			if (p->prior == *L)
 			{
-				p = p->next;
+				NEXT(&p);
 			}
-			p = p->next;
+			NEXT(&p);
 			printf("%d->", p->data);
 			pos++;
 		}
-		if (p->next == *L)
-			p = p->next;
+		if (p== *L)
+			NEXT(&p);
 		int e;
-		ListDelete(p, &e);
-		printf("\ndelete:%d->\n", e);
+		ListDelete(&p, &e);
+		printf("delete:%d->\n", e);
+		ListTraverse(*L, MyVisit, NEXT);
+		printf("**************\n\n");
 		pos = 0;
-		printf("AFTER LINKLIST:");
-		ListTraverse(*L, MyVisit);
-		printf("**************\n\n41");
+
 	}
-	printf("the last person: %d->\n", (*L)->next->data);
+	printf("the last person: %d->\n", (*L)->prior->data);
 	return OK;
 }
 int main()
@@ -185,8 +191,10 @@ int main()
 	InitList(&head);
 	for (int i = 1; i <= n; i++)
 	{
-		ListInsert(&head, i, i);
+		ListInsert(&head, 1, i);
 	}
+	ListTraverse(head, MyVisit, NEXT);
+	
 	ListTravel(&head, k, m);
 	DestroyList(&head);
 	system("pause");

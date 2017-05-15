@@ -17,7 +17,7 @@ class Date
 {
 public:
 	Date(int, int, int);
-	friend void Time::display(Date &);
+	friend Time;
 
 private:
 	int month;
