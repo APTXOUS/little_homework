@@ -150,10 +150,9 @@ Status ListTravel(LinkList *L,int k,int m)
 	}
 	printf("\n**************\n");
 	pos = 0;
-	int num = 1;
 	while (ListLength(*L) != 1)
 	{
-		printf("STEP:%d",num);
+		printf("STEP:");
 		while (pos < k-1)
 		{
 			if (p->next == *L)
@@ -161,7 +160,7 @@ Status ListTravel(LinkList *L,int k,int m)
 				p = p->next;
 			}
 			p = p->next;
-			//printf("%d->", p->data);
+			printf("%d->", p->data);
 			pos++;
 		}
 		if (p->next == *L)
@@ -170,10 +169,9 @@ Status ListTravel(LinkList *L,int k,int m)
 		ListDelete(p, &e);
 		printf("\ndelete:%d->\n", e);
 		pos = 0;
-	//	printf("AFTER LINKLIST:");
-		//ListTraverse(*L, MyVisit);
-		printf("**************\n\n");
-		num++;
+		printf("AFTER LINKLIST:");
+		ListTraverse(*L, MyVisit);
+		printf("**************\n\n41");
 	}
 	printf("the last person: %d->\n", (*L)->next->data);
 	return OK;
@@ -191,6 +189,6 @@ int main()
 	}
 	ListTravel(&head, k, m);
 	DestroyList(&head);
-	system("pause");
+	//system("pause");
 	return 0;
 }

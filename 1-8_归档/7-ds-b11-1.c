@@ -191,6 +191,6 @@ int main()
 	}
 	ListTravel(&head, k, m);
 	DestroyList(&head);
-	system("pause");
+//	system("pause");
 	return 0;
 }

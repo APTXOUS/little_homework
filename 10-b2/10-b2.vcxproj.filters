@@ -15,8 +15,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="7-ds-b11-2.c">
+    <ClCompile Include="10-b2-main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="10-b2.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="10-b2.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
